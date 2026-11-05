@@ -1,0 +1,45 @@
+name: Publish APK
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'downloads/*.apk'
+      - 'app/build.gradle'
+      - '.github/workflows/release.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: publish-apk
+  cancel-in-progress: false
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Select current APK
+        shell: python
+        run: |
+          import os, pathlib, re
+          config = pathlib.Path('app/build.gradle').read_text(encoding='utf-8-sig')
+          match = re.search(r'versionName\s+[\'\"]([0-9]+(?:\.[0-9]+)*(?:-[A-Za-z0-9.]+)?)[\'\"]', config)
+          if not match:
+              raise SystemExit('Missing versionName')
+          version = match.group(1)
+          apk = pathlib.Path(f'downloads/CardLab-{version}-debug.apk')
+          if not apk.is_file() or apk.stat().st_size == 0:
+              raise SystemExit(f'Missing APK: {apk}')
+          with open(os.environ['GITHUB_ENV'], 'a') as env:
+              env.write(f'VERSION={version}\nTAG=v{version}\nAPK={apk.as_posix()}\n')
+      - name: Publish installation package
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            gh release upload "$TAG" "$APK" --clobber
+          else
+            gh release create "$TAG" "$APK" --target "$GITHUB_SHA" --title "NFC CardLab $VERSION" --notes "下载下方 APK 安装。" --latest
+          fi
