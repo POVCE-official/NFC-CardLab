@@ -1,0 +1,6 @@
+<resources>
+    <item name="nav_home" type="id"/>
+    <item name="nav_wallet" type="id"/>
+    <item name="nav_advanced" type="id"/>
+    <item name="nav_settings" type="id"/>
+</resources>

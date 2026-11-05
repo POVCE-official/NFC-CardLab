@@ -1,0 +1,10 @@
+<resources>
+    <style name="Theme.CardLab" parent="Theme.Material3.Light.NoActionBar">
+        <item name="colorPrimary">#536B50</item>
+        <item name="colorSecondary">#56624F</item>
+        <item name="android:fontFamily">sans</item>
+        <item name="android:windowLightStatusBar">true</item>
+        <item name="android:statusBarColor">#F7F9F2</item>
+        <item name="android:navigationBarColor">#F7F9F2</item>
+    </style>
+</resources>
